@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch } from 'antd';
 import { getBooks } from '../api/books';
+import { BASE_URL } from '../api/config';
 const { Search } = Input;
 const { Option } = Select;
 const Books = () => {
@@ -129,7 +130,13 @@ const Books = () => {
           {filteredBooks.map((book) => (
             <Col span={32} key={book.id}>
               <Card title={book.title} bordered={true}>
-                <img src={book.imageUrl} width={200}></img>
+                {book.imagePath && (
+                <img
+                  alt={book.title}
+                  src={`${BASE_URL}${book.imagePath}`} width={200} 
+                />
+                )}
+                <img src={book.imageUrl} ></img>
                 <p>
                   <b>Genre:</b> {book.genres.map((genre) => genre.name).join(", ")}
                 </p>
