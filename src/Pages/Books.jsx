@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch } from 'antd';
+import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, FloatButton } from 'antd';
 import { getBooks } from '../api/books';
 import { BASE_URL } from '../api/config';
+import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
+
 const { Search } = Input;
 const { Option } = Select;
 const Books = () => {
   const [advancedVisible, setAdvancedVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [books, setBooks] = useState([]);
-  
+  const [sortIcon, setSortIcon] = useState(<SortAscendingOutlined />);
+
   const [genres, setGenres] = useState([]);
   const [publicationYear, setPublicationYear] = useState(null);
   const onAdvancedSearch = () => {
@@ -55,20 +58,20 @@ const Books = () => {
   }, []);
 
   useEffect(() => {
-  const filtered = books.filter((book) => {
-    const genreMatch = isAdvancedSearchActive ? (genres.length === 0 || book.genres.some(g => genres.includes(g.name))) : true;
-    const yearMatch = isAdvancedSearchActive
-      ? (publicationYear === null || new Date(book.publicationYear).getFullYear() === Number(publicationYear))
-      : true;
-    const availabilityMatch = isAdvancedSearchActive ? (isAvailable === null || book.isAvailable === isAvailable) : true;
-    const authorMatch = isAdvancedSearchActive ? (author === '' || book.authors.some(a => `${a.firstName} ${a.lastName}`.toLowerCase().includes(author.toLowerCase()))) : true;
-    const titleMatch = book.title.toLowerCase().includes(searchTerm.toLowerCase());
-    return genreMatch && yearMatch && availabilityMatch && authorMatch && titleMatch;
-  });
-  setFilteredBooks(filtered);
-}, [books, genres, publicationYear, isAvailable, author, searchTerm, isAdvancedSearchActive]);
+    const filtered = books.filter((book) => {
+      const genreMatch = isAdvancedSearchActive ? (genres.length === 0 || book.genres.some(g => genres.includes(g.name))) : true;
+      const yearMatch = isAdvancedSearchActive
+        ? (publicationYear === null || new Date(book.publicationYear).getFullYear() === Number(publicationYear))
+        : true;
+      const availabilityMatch = isAdvancedSearchActive ? (isAvailable === null || book.isAvailable === isAvailable) : true;
+      const authorMatch = isAdvancedSearchActive ? (author === '' || book.authors.some(a => `${a.firstName} ${a.lastName}`.toLowerCase().includes(author.toLowerCase()))) : true;
+      const titleMatch = book.title.toLowerCase().includes(searchTerm.toLowerCase());
+      return genreMatch && yearMatch && availabilityMatch && authorMatch && titleMatch;
+    });
+    setFilteredBooks(filtered);
+  }, [books, genres, publicationYear, isAvailable, author, searchTerm, isAdvancedSearchActive]);
 
-  
+
 
   const showAdvancedDrawer = () => {
     setAdvancedVisible(true);
@@ -88,7 +91,11 @@ const Books = () => {
     );
     setBooks(sortedBooks);
     setSortDirection(sortDirection * -1);
+
+    // Обновляем состояние sortIcon
+    setSortIcon(sortIcon === 'SortAscendingOutlined' ? 'SortDescendingOutlined' : 'SortAscendingOutlined');
   };
+
 
   const filteredData = [...books].filter((book) =>
     book.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -97,6 +104,8 @@ const Books = () => {
   const sortedData = filteredData.sort((a, b) =>
     a.title.localeCompare(b.title) * sortDirection
   );
+
+
 
   return (
 
@@ -115,12 +124,19 @@ const Books = () => {
           </div>
           <div style={{ display: 'flex' }}>
             <Button style={{ margin: '0px 5px' }} size='large' type="primary" onClick={showAdvancedDrawer}>
-              
+
               Расширенный поиск
+              
             </Button>
-            <Button style={{ margin: '0px 5px' }} size='large' type="primary" onClick={handleSort}>
-              Сортировать по алфавиту
-            </Button>
+
+            <Button
+                style={{ margin: '0px 5px' }}
+                size='large'
+                type="primary"
+                onClick={handleSort}
+              >
+                {sortIcon === 'SortAscendingOutlined' ? <SortAscendingOutlined /> : <SortDescendingOutlined />} Сортировать по алфавиту
+              </Button>
           </div>
         </div>
       </Row>
@@ -131,10 +147,10 @@ const Books = () => {
             <Col span={32} key={book.id}>
               <Card title={book.title} bordered={true}>
                 {book.imagePath && (
-                <img
-                  alt={book.title}
-                  src={`${BASE_URL}${book.imagePath}`} width={200} 
-                />
+                  <img
+                    alt={book.title}
+                    src={`${BASE_URL}${book.imagePath}`} width={200}
+                  />
                 )}
                 <img src={book.imageUrl} ></img>
                 <p>

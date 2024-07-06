@@ -6,6 +6,8 @@ import Rentors from "./pages/Rentors";
 import Rental from "./pages/Rental";
 import Books from "./pages/Books";
 import LibrarianAuth from "./pages/LibrarianAuth";
+import ZoomController from './components/ZoomController';
+import ReadingMode from './components/ReadingMode';
 
 const { Content } = Layout;
 
@@ -25,27 +27,31 @@ const NotFound = () => {
 
 const App = () => {
   return (
- <Router>
-      <Routes>
-        <Route path="/login" element={<LibrarianAuth />} />
-        <Route
-          path="*"
-          element={
-            <Layout style={{ minHeight: "100vh" }}>
-              <Sidebar />
-              <Content style={{ padding: "0 15px" }}>
-                <Routes>
-                  <Route path="/books" element={<PrivateRoute element={<Books />} />} />
-                  <Route path="/rental" element={<PrivateRoute element={<Rental />} />} />
-                  <Route path="/rentors" element={<PrivateRoute element={<Rentors />} />} />
-                  <Route path="*" element={<NotFound />} /> {/* Добавленный маршрут */}
-                </Routes>
-              </Content>
-            </Layout>
-          }
-        />
-      </Routes>
-    </Router>
+    <div>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LibrarianAuth />} />
+          <Route
+            path="*"
+            element={
+              <Layout style={{ minHeight: "100vh" }}>
+                <Sidebar />
+                <Content style={{ padding: "0 15px" }}>
+                  <Routes>
+                    <Route path="/books" element={<PrivateRoute element={<Books />} />} />
+                    <Route path="/rental" element={<PrivateRoute element={<Rental />} />} />
+                    <Route path="/rentors" element={<PrivateRoute element={<Rentors />} />} />
+                    <Route path="*" element={<NotFound />} /> {/* Добавленный маршрут */}
+                  </Routes>
+                </Content>
+              </Layout>
+            }
+          />
+        </Routes>
+      </Router>
+      <ZoomController />
+     
+    </div>
   );
 };
 

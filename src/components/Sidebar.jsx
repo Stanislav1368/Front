@@ -30,6 +30,7 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   return (
+    
     <Sider style={{ background: 'white' }} width={280}>
       <Menu
         theme="light"
