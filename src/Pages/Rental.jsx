@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, Select, DatePicker, Tag, Space, Flex, Divider } from "antd";
+import { Table, Button, Modal, Form, Input, Select, DatePicker, Tag } from "antd";
 import { getRentals, createRental, updateRental } from "../api/rentals";
 import { getBooks } from "../api/books";
 import { getRenters } from "../api/renters";
 import { getStatuses } from "../api/statuses";
 import moment from "moment";
-import Icon from "@ant-design/icons/lib/components/Icon";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { Header } from "antd/es/layout/layout";
 
 const { Option } = Select;
 
@@ -21,12 +19,27 @@ const Rental = () => {
   const [currentRental, setCurrentRental] = useState(null);
   const [form] = Form.useForm();
   const [reviewForm] = Form.useForm();
+  const [pageSize, setPageSize] = useState(10); // default page size
 
   useEffect(() => {
     fetchRentals();
     fetchBooks();
     fetchRenters();
     fetchStatuses();
+
+    const updatePageSize = () => {
+      const tableHeight = window.innerHeight - 250; // Adjust this value based on your layout
+      const rowHeight = 65; // Approximate height of each row
+      const newPageSize = Math.floor(tableHeight / rowHeight);
+      setPageSize(newPageSize);
+    };
+
+    window.addEventListener("resize", updatePageSize);
+    updatePageSize();
+
+    return () => {
+      window.removeEventListener("resize", updatePageSize);
+    };
   }, []);
 
   const fetchRentals = async () => {
@@ -154,9 +167,20 @@ const Rental = () => {
       key: "",
       render: (status, record) => {
         if (isOverdue(record)) {
-          return <Tag color="#e75959">Просрочена</Tag>;
+          return <Tag color="red">Просрочена</Tag>;
         }
+      
+        if (record.status.name === "Забронирована") {
+          return <Tag color="yellow">Забронирована</Tag>;
+        }
+      
+        if (record.status.name === "Закрыта") {
+          return <Tag color="green">Закрыта</Tag>;
+        }
+      
+        return <Tag color="blue">Активна</Tag>;
       },
+      
     },
   ];
 
@@ -164,26 +188,27 @@ const Rental = () => {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <h1>Аренда</h1>
       <div style={{ margin: "0px 0px 15px 0px", display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
-        <Button size="large" type="primary" onClick={() => setIsModalVisible(true)} icon={<PlusCircleFilled></PlusCircleFilled>}>
+        <Button size="large" type="primary" onClick={() => setIsModalVisible(true)} icon={<PlusCircleFilled />}>
           Создать аренду
         </Button>
-
-        <Flex style={{ gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px" }}>
           <Button size="large" type="default">
             Фильтр 1
           </Button>
           <Button size="large" type="default">
             Фильтр 2
           </Button>
-        </Flex>
+        </div>
       </div>
       <div style={{ flex: 1, overflowY: "auto" }}>
+        {console.log(pageSize)}
         <Table
           dataSource={rentals}
           columns={columns}
           rowKey="id"
           rowClassName={(record) => (isOverdue(record) ? "overdue" : record.status.name === "Закрыта" ? "closed" : "")}
-          pagination={{ pageSize: 13 }}
+          pagination={{ pageSize: pageSize, position: ["topRight"] }}
+          style={{ height: "100%" }}
         />
       </div>
 

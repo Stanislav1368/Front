@@ -3,12 +3,14 @@ import ReactDOM from "react-dom";
 import App from "./App.jsx";
 import "./index.css";
 import { ConfigProvider, Layout } from "antd";
-
+import ruRU from "antd/lib/locale/ru_RU";
+import "moment/locale/ru";
 const { Sider } = Layout;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ConfigProvider
+      locale={ruRU}
       theme={{
         token: {
           colorPrimary: "#ff6347", // Основной цвет
