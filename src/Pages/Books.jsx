@@ -75,9 +75,9 @@ const Books = () => {
   };
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{height: "100vh", display: "flex", flexDirection: "column"  }}>
       <h1>Книги</h1>
-      <Row>
+      <div style={{ margin: "0px 0px 15px 0px", display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '1rem' }}>
           <div style={{ maxWidth: '800px' }}>
             <Search
@@ -103,8 +103,8 @@ const Books = () => {
               </Button>
           </div>
         </div>
-      </Row>
-      <div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto" }}>
         <h1></h1>
         <Row gutter={12}>
           {filteredBooks.map((book) => (
