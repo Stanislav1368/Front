@@ -1,7 +1,8 @@
 import axios from "axios";
+import { BASE_URL } from "./config";
 
 const getAuthors = async () => {
-  const response = await axios.get("https://localhost:7133/api/Authors");
+  const response = await axios.get(`${BASE_URL}/api/Authors`);
   return response.data;
 };
 

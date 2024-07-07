@@ -1,47 +1,29 @@
+// src/pages/Books.jsx
+
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, FloatButton } from 'antd';
+import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { getBooks } from '../api/books';
 import { BASE_URL } from '../api/config';
 import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
 const { Option } = Select;
+
 const Books = () => {
   const [advancedVisible, setAdvancedVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [books, setBooks] = useState([]);
   const [sortIcon, setSortIcon] = useState(<SortAscendingOutlined />);
-
   const [genres, setGenres] = useState([]);
   const [publicationYear, setPublicationYear] = useState(null);
-  const onAdvancedSearch = () => {
-    setIsAdvancedSearchActive(true);
-    onAdvancedClose();
-  };
-  const onPublicationYearChange = (value) => {
-    if (value === '') {
-      setPublicationYear(null);
-    } else {
-      setPublicationYear(value);
-    }
-  };
   const [isAvailable, setIsAvailable] = useState(null);
-  const onAvailabilityChange = (checked) => {
-    setIsAvailable(checked);
-  };
-  const onAuthorChange = (value) => {
-    setAuthor(value);
-    setIsAdvancedSearchActive(false);
-  };
-  const [isAdvancedSearchActive, setIsAdvancedSearchActive] = useState(false);
   const [author, setAuthor] = useState('');
-  const onGenreChange = (values) => {
-    setGenres(values);
-  };
+  const [isAdvancedSearchActive, setIsAdvancedSearchActive] = useState(false);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [sortDirection, setSortDirection] = useState(1); // 1 for ascending, -1 for descending
 
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -50,7 +32,7 @@ const Books = () => {
         setBooks(data);
         setFilteredBooks(data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        message.error("Ошибка при загрузке книг");
       }
     };
 
@@ -71,8 +53,6 @@ const Books = () => {
     setFilteredBooks(filtered);
   }, [books, genres, publicationYear, isAvailable, author, searchTerm, isAdvancedSearchActive]);
 
-
-
   const showAdvancedDrawer = () => {
     setAdvancedVisible(true);
   };
@@ -91,24 +71,10 @@ const Books = () => {
     );
     setBooks(sortedBooks);
     setSortDirection(sortDirection * -1);
-
-    // Обновляем состояние sortIcon
     setSortIcon(sortIcon === 'SortAscendingOutlined' ? 'SortDescendingOutlined' : 'SortAscendingOutlined');
   };
 
-
-  const filteredData = [...books].filter((book) =>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const sortedData = filteredData.sort((a, b) =>
-    a.title.localeCompare(b.title) * sortDirection
-  );
-
-
-
   return (
-
     <div style={{ width: '100%' }}>
       <h1>Книги</h1>
       <Row>
@@ -124,9 +90,7 @@ const Books = () => {
           </div>
           <div style={{ display: 'flex' }}>
             <Button style={{ margin: '0px 5px' }} size='large' type="primary" onClick={showAdvancedDrawer}>
-
               Расширенный поиск
-              
             </Button>
 
             <Button
@@ -145,73 +109,105 @@ const Books = () => {
         <Row gutter={12}>
           {filteredBooks.map((book) => (
             <Col span={32} key={book.id}>
-              <Card title={book.title} bordered={true}>
+              <Card 
+                title={book.title} 
+                bordered={true}
+                onClick={() => navigate(`/books/${book.id}`)}
+              >
                 {book.imagePath && (
                   <img
                     alt={book.title}
                     src={`${BASE_URL}${book.imagePath}`} width={200}
                   />
                 )}
-                <img src={book.imageUrl} ></img>
                 <p>
-                  <b>Genre:</b> {book.genres.map((genre) => genre.name).join(", ")}
+                  <b>Жанры:</b> {book.genres.map((genre) => genre.name).join(", ")}
                 </p>
                 <p>
-                  <b>Publication Year:</b> {book.publicationYear ? new Date(book.publicationYear).getFullYear() : "N/A"}
+                  <b>Год издания:</b> {book.publicationYear ? new Date(book.publicationYear).getFullYear() : "N/A"}
                 </p>
                 <p>
-                  <b>Available:</b> {book.isAvailable ? "Yes" : "No"}
+                  <b>Доступно:</b> {book.isAvailable ? "Да" : "Нет"}
                 </p>
                 <p>
-                  <b>Author:</b> {book.authors.map((author) => `${author.firstName} ${author.lastName}`).join(", ")}
+                  <b>Авторы:</b> {book.authors.map((author) => `${author.firstName} ${author.lastName}`).join(", ")}
+                </p>
+                <p>
+                  <b>Средняя оценка:</b> {book.averageRating.toFixed(1)}
                 </p>
               </Card>
             </Col>
           ))}
         </Row>
       </div>
-
       <Drawer
         title="Расширенный поиск"
         placement="right"
         onClose={onAdvancedClose}
         visible={advancedVisible}
-        width={280}
+        width={720}
       >
-        <Form layout="vertical">
-          <Form.Item label="Жанр">
-            <Select
-              mode="multiple"
-              placeholder="Выберите жанр"
-              value={genres}
-              onChange={onGenreChange}
-            >
-              <Option value="Триллер">Триллер</Option>
-              <Option value="Жанр 2">Жанр 2</Option>
-              <Option value="Жанр 3">Жанр 3</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item label="Год издания">
-            <Input
-              placeholder="Введите год издания"
-              value={publicationYear}
-              onChange={(e) => onPublicationYearChange(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item label="Доступность">
-            <Switch
-              checked={isAvailable}
-              onChange={onAvailabilityChange}
-            />
-          </Form.Item>
-          <Form.Item label="Автор">
-            <Input
-              placeholder="Введите имя автора"
-              value={author}
-              onChange={(e) => onAuthorChange(e.target.value)}
-            />
-          </Form.Item>
-          <Button type="primary" onClick={onAdvancedSearch}>Поиск</Button>
+        <Form layout="vertical" hideRequiredMark>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="author" label="Автор">
+                <Input
+                  placeholder="Введите имя автора"
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="publicationYear" label="Год публикации">
+                <Input
+                  placeholder="Введите год публикации"
+                  value={publicationYear}
+                  onChange={(e) => setPublicationYear(e.target.value)}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="genres" label="Жанры">
+                <Select
+                  mode="multiple"
+                  placeholder="Выберите жанры"
+                  value={genres}
+                  onChange={(value) => setGenres(value)}
+                  style={{ width: "100%" }}
+                >
+                  <Option value="Жанр1">Жанр1</Option>
+                  <Option value="Жанр2">Жанр2</Option>
+                  <Option value="Жанр3">Жанр3</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="isAvailable" label="Доступность">
+                <Switch
+                  checkedChildren="Доступно"
+                  unCheckedChildren="Недоступно"
+                  checked={isAvailable}
+                  onChange={(checked) => setIsAvailable(checked)}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={24}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setIsAdvancedSearchActive(true);
+                  setAdvancedVisible(false);
+                }}
+              >
+                Применить фильтры
+              </Button>
+            </Col>
+          </Row>
         </Form>
       </Drawer>
     </div>
