@@ -7,8 +7,10 @@ const getRenters = async () => {
 };
 
 const createRenter = async (data) => {
+  console.log(data)
     try {
       const response = await axios.post(`${BASE_URL}/api/Renters`, data);
+      console.log(response.data)
       return response.data;
     } catch (error) {
       throw error;
