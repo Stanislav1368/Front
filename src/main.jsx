@@ -32,5 +32,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         )}
       </ThemeContext.Consumer>
     </ThemeProvider>
+
   </React.StrictMode>
 );

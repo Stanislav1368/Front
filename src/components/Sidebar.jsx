@@ -48,7 +48,7 @@ const Sidebar = () => {
   return (
     <Sider style={{ background: "white" }} width={280}>
       <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        <Menu theme="light" mode="inline" selectedKeys={[selectedKey]} onClick={handleMenuClick}>
+        <Menu theme="light" mode="inline" selectedKeys={[selectedKey]} onClick={handleMenuClick} style={{backgroundColor: "white"}}>
           <Menu.Item key="1" icon={<ReadOutlined style={{ fontSize: "28px" }} />} onClick={() => setSelectedKey("1")}>
             <Link to="/books" style={{ fontSize: 18, fontWeight: "bolder", display: "block", color: "inherit" }}>
               Книги
