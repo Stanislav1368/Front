@@ -1,24 +1,24 @@
-// src/pages/Books.jsx
-
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import { getBooks } from '../api/books';
-import { BASE_URL } from '../api/config';
-import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from "react";
+import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, message, Flex } from "antd";
+import { useNavigate } from "react-router-dom";
+import { getBooks } from "../api/books";
+import { getGenres } from "../api/genres"; // Импортируйте функцию getGenres
+import { BASE_URL } from "../api/config";
+import { SortAscendingOutlined, SortDescendingOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
 const { Option } = Select;
 
 const Books = () => {
   const [advancedVisible, setAdvancedVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [books, setBooks] = useState([]);
   const [sortIcon, setSortIcon] = useState(<SortAscendingOutlined />);
   const [genres, setGenres] = useState([]);
+  const [allGenres, setAllGenres] = useState([]); // Добавьте состояние для всех жанров
   const [publicationYear, setPublicationYear] = useState(null);
   const [isAvailable, setIsAvailable] = useState(null);
-  const [author, setAuthor] = useState('');
+  const [author, setAuthor] = useState("");
   const [isAdvancedSearchActive, setIsAdvancedSearchActive] = useState(false);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [sortDirection, setSortDirection] = useState(1); // 1 for ascending, -1 for descending
@@ -36,17 +36,29 @@ const Books = () => {
       }
     };
 
+    const fetchGenres = async () => {
+      try {
+        const genresData = await getGenres();
+        setAllGenres(genresData);
+      } catch (error) {
+        message.error("Ошибка при загрузке жанров");
+      }
+    };
+
     fetchBooks();
+    fetchGenres();
   }, []);
 
   useEffect(() => {
     const filtered = books.filter((book) => {
-      const genreMatch = isAdvancedSearchActive ? (genres.length === 0 || book.genres.some(g => genres.includes(g.name))) : true;
+      const genreMatch = isAdvancedSearchActive ? genres.length === 0 || book.genres.some((g) => genres.includes(g.name)) : true;
       const yearMatch = isAdvancedSearchActive
-        ? (publicationYear === null || new Date(book.publicationYear).getFullYear() === Number(publicationYear))
+        ? publicationYear === null || new Date(book.publicationYear).getFullYear() === Number(publicationYear)
         : true;
-      const availabilityMatch = isAdvancedSearchActive ? (isAvailable === null || book.isAvailable === isAvailable) : true;
-      const authorMatch = isAdvancedSearchActive ? (author === '' || book.authors.some(a => `${a.firstName} ${a.lastName}`.toLowerCase().includes(author.toLowerCase()))) : true;
+      const availabilityMatch = isAdvancedSearchActive ? isAvailable === null || book.isAvailable === isAvailable : true;
+      const authorMatch = isAdvancedSearchActive
+        ? author === "" || book.authors.some((a) => `${a.firstName} ${a.lastName}`.toLowerCase().includes(author.toLowerCase()))
+        : true;
       const titleMatch = book.title.toLowerCase().includes(searchTerm.toLowerCase());
       return genreMatch && yearMatch && availabilityMatch && authorMatch && titleMatch;
     });
@@ -66,60 +78,34 @@ const Books = () => {
   };
 
   const handleSort = () => {
-    const sortedBooks = [...books].sort((a, b) =>
-      a.title.localeCompare(b.title) * sortDirection
-    );
+    const sortedBooks = [...books].sort((a, b) => a.title.localeCompare(b.title) * sortDirection);
     setBooks(sortedBooks);
     setSortDirection(sortDirection * -1);
-    setSortIcon(sortIcon === 'SortAscendingOutlined' ? 'SortDescendingOutlined' : 'SortAscendingOutlined');
+    setSortIcon(sortIcon === "SortAscendingOutlined" ? "SortDescendingOutlined" : "SortAscendingOutlined");
   };
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <h1>Книги</h1>
-      <Row>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '1rem' }}>
-          <div style={{ maxWidth: '800px' }}>
-            <Search
-              placeholder="Поиск книг"
-              onSearch={handleSearch}
-              size='large'
-              enterButton
-              style={{ width: '100%', fontSize: '40px' }}
-            />
-          </div>
-          <div style={{ display: 'flex' }}>
-            <Button style={{ margin: '0px 5px' }} size='large' type="primary" onClick={showAdvancedDrawer}>
-              Расширенный поиск
-            </Button>
+      <div style={{ margin: "0px 0px 15px 0px", display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
+        <Flex>
+          <Search placeholder="Поиск книг" onSearch={handleSearch} size="large" enterButton style={{ width: "100%", fontSize: "40px" }} />
 
-            <Button
-                style={{ margin: '0px 5px' }}
-                size='large'
-                type="primary"
-                onClick={handleSort}
-              >
-                {sortIcon === 'SortAscendingOutlined' ? <SortAscendingOutlined /> : <SortDescendingOutlined />} Сортировать по алфавиту
-              </Button>
-          </div>
-        </div>
-      </Row>
-      <div>
-        <h1></h1>
+          <Button style={{ margin: "0px 5px" }} size="large" type="primary" onClick={showAdvancedDrawer}>
+            Расширенный поиск
+          </Button>
+
+          <Button style={{ margin: "0px 5px" }} size="large" type="primary" onClick={handleSort}>
+            {sortIcon === "SortAscendingOutlined" ? <SortAscendingOutlined /> : <SortDescendingOutlined />} Сортировать по алфавиту
+          </Button>
+        </Flex>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto" }}>
         <Row gutter={12}>
           {filteredBooks.map((book) => (
             <Col span={32} key={book.id}>
-              <Card 
-                title={book.title} 
-                bordered={true}
-                onClick={() => navigate(`/books/${book.id}`)}
-              >
-                {book.imagePath && (
-                  <img
-                    alt={book.title}
-                    src={`${BASE_URL}${book.imagePath}`} width={200}
-                  />
-                )}
+              <Card title={book.title} bordered={true} onClick={() => navigate(`/books/${book.id}`)}>
+                {book.imagePath && <img alt={book.title} src={`${BASE_URL}${book.imagePath}`} width={200} />}
                 <p>
                   <b>Жанры:</b> {book.genres.map((genre) => genre.name).join(", ")}
                 </p>
@@ -140,47 +126,29 @@ const Books = () => {
           ))}
         </Row>
       </div>
-      <Drawer
-        title="Расширенный поиск"
-        placement="right"
-        onClose={onAdvancedClose}
-        visible={advancedVisible}
-        width={720}
-      >
+      <Drawer title="Расширенный поиск" placement="right" onClose={onAdvancedClose} visible={advancedVisible} width={720}>
         <Form layout="vertical" hideRequiredMark>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="author" label="Автор">
-                <Input
-                  placeholder="Введите имя автора"
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                />
+                <Input placeholder="Введите имя автора" value={author} onChange={(e) => setAuthor(e.target.value)} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="publicationYear" label="Год публикации">
-                <Input
-                  placeholder="Введите год публикации"
-                  value={publicationYear}
-                  onChange={(e) => setPublicationYear(e.target.value)}
-                />
+                <Input placeholder="Введите год публикации" value={publicationYear} onChange={(e) => setPublicationYear(e.target.value)} />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="genres" label="Жанры">
-                <Select
-                  mode="multiple"
-                  placeholder="Выберите жанры"
-                  value={genres}
-                  onChange={(value) => setGenres(value)}
-                  style={{ width: "100%" }}
-                >
-                  <Option value="Жанр1">Жанр1</Option>
-                  <Option value="Жанр2">Жанр2</Option>
-                  <Option value="Жанр3">Жанр3</Option>
+                <Select mode="multiple" placeholder="Выберите жанры" value={genres} onChange={(value) => setGenres(value)} style={{ width: "100%" }}>
+                  {allGenres.map((genre) => (
+                    <Option key={genre.id} value={genre.name}>
+                      {genre.name}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
@@ -202,8 +170,7 @@ const Books = () => {
                 onClick={() => {
                   setIsAdvancedSearchActive(true);
                   setAdvancedVisible(false);
-                }}
-              >
+                }}>
                 Применить фильтры
               </Button>
             </Col>

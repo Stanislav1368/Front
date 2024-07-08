@@ -5,7 +5,6 @@ import "./index.css";
 import { ConfigProvider, Layout } from "antd";
 import ruRU from "antd/lib/locale/ru_RU";
 import "moment/locale/ru";
-const { Sider } = Layout;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -23,14 +22,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           // Дополнительные токены по мере необходимости
           colorLink: "#1890ff", // Цвет ссылок
           borderColor: "#e8e8e8", // Цвет рамок
-        },
-        layout: {
-          siderWidth: 300, // Ширина Sider
-          siderBgColor: "#fafafa", // Фон Sider
-          contentPadding: "24px", // Отступ содержимого
-          // Дополнительные настройки макета по мере необходимости
-          headerHeight: "64px", // Высота заголовка
-          footerHeight: "60px", // Высота подвала
         },
       }}>
       <App />

@@ -115,13 +115,13 @@ const Rental = () => {
       title: "Автор(ы)",
       dataIndex: ["book", "authors"],
       key: "bookAuthors",
-      render: (authors) => authors.map((author) => `${author.firstName} ${author.lastName}`).join(", "),
+      render: (authors) => authors.map((author) => `${author.firstName}  ${author.patronymic}  ${author.lastName}`).join(", "),
     },
     {
       title: "Арендатор",
       dataIndex: "renter",
       key: "renter",
-      render: (renter) => (renter ? `${renter.firstName} ${renter.lastName}` : "-"),
+      render: (renter) => (renter ? `${renter.firstName} ${renter.patronymic} ${renter.lastName}` : "-"),
     },
     {
       title: "Библиотекарь",
@@ -169,18 +169,17 @@ const Rental = () => {
         if (isOverdue(record)) {
           return <Tag color="red">Просрочена</Tag>;
         }
-      
+
         if (record.status.name === "Забронирована") {
           return <Tag color="yellow">Забронирована</Tag>;
         }
-      
+
         if (record.status.name === "Закрыта") {
           return <Tag color="green">Закрыта</Tag>;
         }
-      
+
         return <Tag color="blue">Активна</Tag>;
       },
-      
     },
   ];
 
@@ -218,7 +217,12 @@ const Rental = () => {
             <Select showSearch optionFilterProp="children">
               {books.map((book) => (
                 <Option key={book.id} value={book.id}>
-                  {book.title}
+                  {book.title}{" "}
+                  {book.authors.map((author) => (
+                    <div>
+                      {author.firstName} {author.patronymic} {author.lastName}
+                    </div>
+                  ))}
                 </Option>
               ))}
             </Select>
@@ -227,7 +231,7 @@ const Rental = () => {
             <Select showSearch optionFilterProp="children">
               {renters.map((renter) => (
                 <Option key={renter.id} value={renter.id}>
-                  {renter.firstName} {renter.lastName}
+                  #{renter.id} {renter.firstName} {renter.patronymic} {renter.lastName}
                 </Option>
               ))}
             </Select>

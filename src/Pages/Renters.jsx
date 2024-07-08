@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Form, Input, message, Modal, Flex } from "antd";
 import { createRenter, getRenters } from "../api/renters";
 import { PlusCircleFilled } from "@ant-design/icons";
+import InputMask from "react-input-mask";
 
 const Renters = () => {
   const [renters, setRenters] = useState([]);
@@ -73,7 +74,7 @@ const Renters = () => {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <h1>Арендаторы</h1>
       <div style={{ margin: "0px 0px 15px 0px", display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
-        <Button size="large" type="primary" onClick={() => setIsModalVisible(true)} icon={<PlusCircleFilled></PlusCircleFilled>}>
+        <Button size="large" type="primary" onClick={() => setIsModalVisible(true)} icon={<PlusCircleFilled />}>
           Добавить арендатора
         </Button>
 
@@ -104,7 +105,9 @@ const Renters = () => {
             <Input />
           </Form.Item>
           <Form.Item name="contactNumber" label="Контактный номер" rules={[{ required: true, message: "Введите контактный номер" }]}>
-            <Input />
+            <InputMask mask="+7 (999) 999-99-99">
+              {(inputProps) => <Input {...inputProps} />}
+            </InputMask>
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
