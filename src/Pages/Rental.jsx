@@ -210,14 +210,13 @@ const Rental = () => {
           style={{ height: "100%" }}
         />
       </div>
-
       <Modal title="Создать аренду" visible={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null}>
         <Form form={form} onFinish={handleCreateRental}>
           <Form.Item name="bookId" label="Книга" rules={[{ required: true }]}>
             <Select showSearch optionFilterProp="children">
               {books.map((book) => (
                 <Option key={book.id} value={book.id}>
-                  {book.title}{" "}
+                  {book.title}
                   {book.authors.map((author) => (
                     <div>
                       {author.firstName} {author.patronymic} {author.lastName}
