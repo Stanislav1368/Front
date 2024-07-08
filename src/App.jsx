@@ -10,7 +10,7 @@ import Books from './pages/Books';
 import Book from './pages/Book';
 import ZoomController from './components/ZoomController';
 import ColorTheme from "./components/ColorTheme";
-import ReadingMode from './components/ReadingMode';
+
 import Login from './pages/Login';
 
 const { Content } = Layout;
@@ -65,6 +65,7 @@ const App = () => (
         />
       </Routes>
     </Router>
+    
     <ColorTheme></ColorTheme>
     <ZoomController />
   </div>
