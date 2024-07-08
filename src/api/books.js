@@ -13,6 +13,23 @@ export const getBooks = async () => {
   }
 };
 
+export const addBook = async (bookData) => {
+  const formData = new FormData();
+  formData.append("Title", bookData.title);
+  formData.append("Image", bookData.image);
+  formData.append("PublicationYear", bookData.publicationYear);
+  formData.append("IsAvailable", bookData.isAvailable);
+  bookData.authorIds.forEach(id => formData.append("AuthorIds", id));
+  bookData.genreIds.forEach(id => formData.append("GenreIds", id));
+  
+  const response = await axios.post(`${BASE_URL}/api/Books`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return response.data;
+};
+
 export const getBookById = async (bookId) => {
   try {
     const response = await axios.get(`${BASE_URL}/api/Books/${bookId}`);

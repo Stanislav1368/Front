@@ -9,7 +9,8 @@ import Rental from './pages/Rental';
 import Books from './pages/Books';
 import Book from './pages/Book';
 import ZoomController from './components/ZoomController';
-import ReadingMode from './components/ReadingMode';
+import ColorTheme from "./components/ColorTheme";
+
 import Login from './pages/Login';
 
 const { Content } = Layout;
@@ -64,6 +65,8 @@ const App = () => (
         />
       </Routes>
     </Router>
+    
+    <ColorTheme></ColorTheme>
     <ZoomController />
   </div>
 );

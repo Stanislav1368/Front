@@ -1,30 +1,37 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import App from "./App.jsx";
-import "./index.css";
-import { ConfigProvider, Layout } from "antd";
-import ruRU from "antd/lib/locale/ru_RU";
-import "moment/locale/ru";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App.jsx';
+import './index.css';
+import { ConfigProvider, Layout } from 'antd';
+import ruRU from 'antd/lib/locale/ru_RU';
+import 'moment/locale/ru';
+import { ThemeProvider, ThemeContext } from './contexts/ThemeContext';
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+const { Sider } = Layout;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ConfigProvider
-      locale={ruRU}
-      theme={{
-        token: {
-          colorPrimary: "#ff6347", // Основной цвет
-          colorSecondary: "#ffa500", // Вторичный цвет
-          colorText: "#555555", // Цвет текста
-          colorBgContainer: "#fafafa", // Фон контейнера
-          spacingSmall: "8px", // Отступы
-          fontFamily: "Helvetica, Arial, sans-serif",
-          fontSizeBase: "16px",
-          // Дополнительные токены по мере необходимости
-          colorLink: "#1890ff", // Цвет ссылок
-          borderColor: "#e8e8e8", // Цвет рамок
-        },
-      }}>
-      <App />
-    </ConfigProvider>
+    <ThemeProvider>
+      <ThemeContext.Consumer>
+        {({ theme }) => (
+          <ConfigProvider
+            locale={ruRU}
+            theme={{
+              token: theme,
+              layout: {
+                siderWidth: 300,
+                siderBgColor: '#fafafa',
+                contentPadding: '24px',
+                headerHeight: '64px',
+                footerHeight: '60px',
+              },
+            }}
+          >
+            <App />
+          </ConfigProvider>
+        )}
+      </ThemeContext.Consumer>
+    </ThemeProvider>
+
   </React.StrictMode>
 );
