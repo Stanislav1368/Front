@@ -88,14 +88,14 @@ const Books = () => {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <h1>Книги</h1>
       <div style={{ margin: "0px 0px 15px 0px", display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
-        <Flex>
+      <Flex style={{gap: "10px"}}>
           <Search placeholder="Поиск книг" onSearch={handleSearch} size="large" enterButton style={{ width: "100%", fontSize: "40px" }} />
 
-          <Button style={{ margin: "0px 5px" }} size="large" type="primary" onClick={showAdvancedDrawer}>
+          <Button size="large" type="primary" onClick={showAdvancedDrawer}>
             Расширенный поиск
           </Button>
 
-          <Button style={{ margin: "0px 5px" }} size="large" type="primary" onClick={handleSort}>
+          <Button  size="large" type="primary" onClick={handleSort}>
             {sortIcon === "SortAscendingOutlined" ? <SortAscendingOutlined /> : <SortDescendingOutlined />} Сортировать по алфавиту
           </Button>
         </Flex>
