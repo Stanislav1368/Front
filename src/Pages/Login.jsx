@@ -16,7 +16,7 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(response));
       navigate(response.isRenter ? '/books' : '/rental');
     } catch (error) {
-      message.error('Login failed. Please try again.');
+      message.error('Ошибка, попробуйте еще раз.');
       console.error(error);
     } finally {
       setLoading(false);
@@ -32,26 +32,26 @@ const Login = () => {
       >
         <Form.Item
           name="login"
-          rules={[{ required: true, message: 'Please input your Username!' }]}
+          rules={[{ required: true, message: 'Пожалуйста, введите логин!' }]}
         >
-          <Input prefix={<UserOutlined />} placeholder="Username" />
+          <Input prefix={<UserOutlined />} placeholder="Логин" />
         </Form.Item>
         <Form.Item
           name="password"
-          rules={[{ required: true, message: 'Please input your Password!' }]}
+          rules={[{ required: true, message: 'Пожалуйста, введите пароль!' }]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="Password" />
+          <Input.Password prefix={<LockOutlined />} placeholder="Пароль" />
         </Form.Item>
         <Form.Item
           name="isRenter"
           valuePropName="checked"
           initialValue={true}
         >
-          <Checkbox>Renter</Checkbox>
+          <Checkbox>Войти как клиент</Checkbox>
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>
-            Log in
+            Войти
           </Button>
         </Form.Item>
       </Form>

@@ -64,9 +64,14 @@ const Rental = () => {
 
   const handleCreateRental = async (values) => {
     const newRental = {
-      ...values,
+      bookId: values.bookId,
+      renterId: values.renterId,
       librarianId: JSON.parse(localStorage.getItem("user")).id,
+      statusId: values.statusId,
+      rentedAt: values.rentedAt.toISOString(),
+      returnedAt: values.returnedAt.toISOString(),
     };
+
     const createdRental = await createRental(newRental);
     setRentals([...rentals, createdRental]);
     setIsModalVisible(false);
@@ -85,10 +90,17 @@ const Rental = () => {
   };
 
   const handleEditStatus = async (rentalId, statusId) => {
+    const status = statuses.find((status) => status.id === statusId);
+
     const updatedFields = {
       statusId: statusId,
       id: rentalId,
     };
+
+    if (status.name === "Закрыта") {
+      updatedFields.actualReturnedAt = new Date().toISOString(); // Set the current date as the actual return date
+    }
+
     const updatedRental = await updateRental(rentalId, updatedFields);
     setRentals(rentals.map((rental) => (rental.id === rentalId ? updatedRental : rental)));
   };
@@ -121,7 +133,7 @@ const Rental = () => {
       title: "Арендатор",
       dataIndex: "renter",
       key: "renter",
-      render: (renter) => (renter ? `${renter.firstName} ${renter.patronymic} ${renter.lastName}` : "-"),
+      render: (renter) => (renter ? `#${renter.id} ${renter.firstName} ${renter.patronymic} ${renter.lastName}` : "-"),
     },
     {
       title: "Библиотекарь",
@@ -156,6 +168,12 @@ const Rental = () => {
       render: (returnedAt) => (returnedAt ? moment(returnedAt).format("DD.MM.YYYY") : "-"),
     },
     {
+      title: "Фактическая дата возврата",
+      dataIndex: "actualReturnedAt",
+      key: "actualReturnedAt",
+      render: (actualReturnedAt) => (actualReturnedAt ? moment(actualReturnedAt).format("DD.MM.YYYY") : "-"),
+    },
+    {
       title: "Отзыв",
       dataIndex: "review",
       key: "review",
@@ -166,19 +184,18 @@ const Rental = () => {
       dataIndex: "",
       key: "",
       render: (status, record) => {
-        if (isOverdue(record)) {
-          return <Tag color="red">Просрочена</Tag>;
-        }
-
-        if (record.status.name === "Забронирована") {
-          return <Tag color="yellow">Забронирована</Tag>;
-        }
-
         if (record.status.name === "Закрыта") {
           return <Tag color="green">Закрыта</Tag>;
         }
-
-        return <Tag color="blue">Активна</Tag>;
+        if (record.status.name === "Забронирована") {
+          return <Tag color="yellow">Забронирована</Tag>;
+        }
+        if (isOverdue(record)) {
+          return <Tag color="red">Просрочена</Tag>;
+        }
+        if (record.status.name === "Активна") {
+          return <Tag color="blue">Активна</Tag>;
+        }
       },
     },
   ];
@@ -199,58 +216,41 @@ const Rental = () => {
           </Button>
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        {console.log(pageSize)}
-        <Table
-          dataSource={rentals}
-          columns={columns}
-          rowKey="id"
-          rowClassName={(record) => (isOverdue(record) ? "overdue" : record.status.name === "Закрыта" ? "closed" : "")}
-          pagination={{ pageSize: pageSize, position: ["topRight"] }}
-          style={{ height: "100%" }}
-        />
-      </div>
+      <Table columns={columns} dataSource={rentals} rowKey="id" pagination={{ pageSize: pageSize }} style={{ flex: 1, overflow: "auto" }} />
       <Modal title="Создать аренду" visible={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null}>
         <Form form={form} onFinish={handleCreateRental}>
-          <Form.Item name="bookId" label="Книга" rules={[{ required: true }]}>
-            <Select showSearch optionFilterProp="children">
+          <Form.Item name="bookId" label="Книга" rules={[{ required: true, message: "Пожалуйста, выберите книгу!" }]}>
+            <Select placeholder="Выберите книгу">
               {books.map((book) => (
                 <Option key={book.id} value={book.id}>
                   {book.title}
-                  {book.authors.map((author) => (
-                    <div>
-                      {author.firstName} {author.patronymic} {author.lastName}
-                    </div>
-                  ))}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="renterId" label="Арендатор" rules={[{ required: true }]}>
-            <Select showSearch optionFilterProp="children">
+          <Form.Item name="renterId" label="Арендатор" rules={[{ required: true, message: "Пожалуйста, выберите арендатора!" }]}>
+            <Select placeholder="Выберите арендатора">
               {renters.map((renter) => (
                 <Option key={renter.id} value={renter.id}>
-                  #{renter.id} {renter.firstName} {renter.patronymic} {renter.lastName}
+                  {renter.firstName} {renter.patronymic} {renter.lastName}
                 </Option>
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="statusId" label="Статус" rules={[{ required: true }]}>
-            <Select showSearch optionFilterProp="children">
-              {statuses
-                .filter((status) => status.name === "Активна" || status.name === "Забронирована")
-                .map((status) => (
-                  <Option key={status.id} value={status.id}>
-                    {status.name}
-                  </Option>
-                ))}
+          <Form.Item name="statusId" label="Статус" rules={[{ required: true, message: "Пожалуйста, выберите статус!" }]}>
+            <Select placeholder="Выберите статус">
+              {statuses.filter(status => status.name === 'Активна' || status.name === 'Забронирована').map((status) => (
+                <Option key={status.id} value={status.id}>
+                  {status.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
-          <Form.Item name="rentedAt" label="Дата аренды" rules={[{ required: true }]}>
-            <DatePicker format="DD.MM.YYYY" />
+          <Form.Item name="rentedAt" label="Дата аренды" rules={[{ required: true, message: "Пожалуйста, выберите дату аренды!" }]}>
+            <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD HH:mm:ss" showTime={{ defaultValue: moment('00:00:00', 'HH:mm:ss') }} />
           </Form.Item>
-          <Form.Item name="returnedAt" label="Дата возврата" rules={[{ required: true }]}>
-            <DatePicker format="DD.MM.YYYY" />
+          <Form.Item name="returnedAt" label="Дата возврата" rules={[{ required: true, message: "Пожалуйста, выберите дату возврата!" }]}>
+            <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD HH:mm:ss" showTime={{ defaultValue: moment('00:00:00', 'HH:mm:ss') }} />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
@@ -259,11 +259,10 @@ const Rental = () => {
           </Form.Item>
         </Form>
       </Modal>
-
       <Modal title="Изменить отзыв" visible={isReviewModalVisible} onCancel={() => setIsReviewModalVisible(false)} footer={null}>
         <Form form={reviewForm} onFinish={handleEditReview}>
-          <Form.Item name="review" label="Отзыв">
-            <Input.TextArea />
+          <Form.Item name="review" label="Отзыв" rules={[{ required: true, message: "Пожалуйста, введите отзыв!" }]}>
+            <Input.TextArea rows={4} />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">

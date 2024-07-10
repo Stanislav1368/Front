@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, message, Upload, Flex, Modal } from "antd";
+import { Card, Row, Col, Input, Button, Drawer, Form, Select, Switch, message, Upload, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import { getBooks } from "../api/books";
 import { getGenres } from "../api/genres";
@@ -42,8 +42,18 @@ const Books = () => {
     const fetchBooks = async () => {
       try {
         const data = await getBooks();
-        setBooks(data);
-        setFilteredBooks(data);
+        const updatedBooks = data.map((book) => {
+          const isInActiveRental = book.rentals.some((rental) => {
+            return (
+              new Date() >= new Date(rental.rentedAt) &&
+              (!rental.returnedAt || new Date() <= new Date(rental.returnedAt)) &&
+              rental.status.name !== "Закрыта"
+            );
+          });
+          return { ...book, isInActiveRental };
+        });
+        setBooks(updatedBooks);
+        setFilteredBooks(updatedBooks);
       } catch (error) {
         message.error("Ошибка при загрузке книг");
       }
@@ -117,6 +127,7 @@ const Books = () => {
 
   const handleAddBook = async () => {
     try {
+      newBook.isAvailable = true;
       await addBook(newBook);
       message.success("Книга успешно добавлена");
       onAddBookClose();
@@ -169,102 +180,72 @@ const Books = () => {
                     <b>Год издания:</b> {book.publicationYear ? new Date(book.publicationYear).getFullYear() : "N/A"}
                   </p>
                   <p>
-                    <b>Доступно:</b> {book.isAvailable ? "Да" : "Нет"}
-                  </p>
-                  <p>
                     <b>Авторы:</b> {book.authors.map((author) => `${author.firstName} ${author.lastName}`).join(", ")}
                   </p>
                   <p>
                     <b>Средняя оценка:</b> {book.averageRating.toFixed(1)}
                   </p>
+                  {book.isInActiveRental && <p style={{ color: "red", fontWeight: "bold" }}>В АРЕНДЕ</p>}
                 </div>
               </Card>
             </div>
           ))}
         </div>
       </div>
-      <Drawer title="Расширенный поиск" placement="right" onClose={onAdvancedClose} visible={advancedVisible} width={720}>
+      <Drawer title="Расширенный поиск" placement="right" onClose={onAdvancedClose} visible={advancedVisible} width={400}>
         <Form layout="vertical" hideRequiredMark>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="author" label="Автор">
-                <Input placeholder="Введите имя автора" value={author} onChange={(e) => setAuthor(e.target.value)} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="publicationYear" label="Год публикации">
-                <Input placeholder="Введите год публикации" value={publicationYear} onChange={(e) => setPublicationYear(e.target.value)} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="genres" label="Жанры">
-                <Select mode="multiple" placeholder="Выберите жанры" value={genres} onChange={(value) => setGenres(value)} style={{ width: "100%" }}>
-                  {allGenres.map((genre) => (
-                    <Option key={genre.id} value={genre.name}>
-                      {genre.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="isAvailable" label="Доступность">
-                <Switch
-                  checkedChildren="Доступно"
-                  unCheckedChildren="Недоступно"
-                  checked={isAvailable}
-                  onChange={(checked) => setIsAvailable(checked)}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24}>
-              <Button
-                type="primary"
-                onClick={() => {
-                  setIsAdvancedSearchActive(true);
-                  setAdvancedVisible(false);
-                }}>
-                Применить фильтры
-              </Button>
-            </Col>
-          </Row>
+          <Form.Item name="author" label="Автор">
+            <Input placeholder="Введите имя автора" value={author} onChange={(e) => setAuthor(e.target.value)} />
+          </Form.Item>
+
+          <Form.Item name="genres" label="Жанры">
+            <Select mode="multiple" placeholder="Выберите жанры" value={genres} onChange={(values) => setGenres(values)} style={{ width: "100%" }}>
+              {allGenres.map((genre) => (
+                <Option key={genre.id}>{genre.name}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="publicationYear" label="Год издания">
+            <Input placeholder="Введите год" value={publicationYear} onChange={(e) => setPublicationYear(e.target.value)} />
+          </Form.Item>
+
+          <Form.Item name="availability" label="Доступность">
+            <Select placeholder="Выберите доступность" value={isAvailable} onChange={(value) => setIsAvailable(value)} style={{ width: "100%" }}>
+              <Option value={true}>Доступно</Option>
+              <Option value={false}>Не доступно</Option>
+            </Select>
+          </Form.Item>
+
+          {/* <Form.Item>
+            <Switch checked={isAdvancedSearchActive} onChange={(checked) => setIsAdvancedSearchActive(checked)} /> Активировать расширенный поиск
+          </Form.Item> */}
+          <Button type="primary" onClick={() => setIsAdvancedSearchActive(true)}>
+            Применить
+          </Button>
         </Form>
       </Drawer>
       <Modal title="Добавить книгу" visible={addBookVisible} onOk={handleAddBook} onCancel={onAddBookClose}>
-        <Form layout="vertical" hideRequiredMark>
-          <Form.Item label="Название">
-            <Input value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} />
+        <Form layout="vertical">
+          <Form.Item label="Название книги">
+            <Input placeholder="Введите название книги" value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} />
           </Form.Item>
-          <Form.Item label="Изображение">
-            <Upload
-              beforeUpload={(file) => {
-                setNewBook({ ...newBook, image: file });
-                return false;
-              }}>
-              <Button>Выберите файл</Button>
-            </Upload>
-          </Form.Item>
-          <Form.Item label="Год публикации">
-            <Input value={newBook.publicationYear} onChange={(e) => setNewBook({ ...newBook, publicationYear: e.target.value })} />
-          </Form.Item>
-          <Form.Item label="Доступность">
-            <Switch checked={newBook.isAvailable} onChange={(checked) => setNewBook({ ...newBook, isAvailable: checked })} />
+          <Form.Item label="Год издания">
+            <Input
+              placeholder="Введите год издания"
+              value={newBook.publicationYear}
+              onChange={(e) => setNewBook({ ...newBook, publicationYear: e.target.value })}
+            />
           </Form.Item>
           <Form.Item label="Авторы">
             <Select
               mode="multiple"
               placeholder="Выберите авторов"
               value={newBook.authorIds}
-              onChange={(value) => setNewBook({ ...newBook, authorIds: value })}
+              onChange={(values) => setNewBook({ ...newBook, authorIds: values })}
               style={{ width: "100%" }}>
               {allAuthors.map((author) => (
-                <Option key={author.id} value={author.id}>
-                  {author.firstName} {author.patronymic} {author.lastName}
-                </Option>
+                <Option key={author.id}>{`${author.firstName} ${author.lastName}`}</Option>
               ))}
             </Select>
           </Form.Item>
@@ -273,14 +254,23 @@ const Books = () => {
               mode="multiple"
               placeholder="Выберите жанры"
               value={newBook.genreIds}
-              onChange={(value) => setNewBook({ ...newBook, genreIds: value })}
+              onChange={(values) => setNewBook({ ...newBook, genreIds: values })}
               style={{ width: "100%" }}>
               {allGenres.map((genre) => (
-                <Option key={genre.id} value={genre.id}>
-                  {genre.name}
-                </Option>
+                <Option key={genre.id}>{genre.name}</Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item label="Изображение">
+            <Upload
+              accept="image/*"
+              beforeUpload={(file) => {
+                setNewBook({ ...newBook, image: file });
+                return false;
+              }}
+              fileList={newBook.image ? [newBook.image] : []}>
+              <Button>Выберите файл</Button>
+            </Upload>
           </Form.Item>
         </Form>
       </Modal>

@@ -3,10 +3,12 @@ import { BASE_URL } from "./config";
 
 const getRentals = async () => {
   const response = await axios.get(`${BASE_URL}/api/Rentals`);
+  console.log(response.data)
   return response.data;
 };
 
 const createRental = async (rental) => {
+  console.log(rental)
   const response = await axios.post(`${BASE_URL}/api/Rentals`, rental);
   return response.data;
 };
